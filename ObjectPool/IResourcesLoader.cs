@@ -1,0 +1,7 @@
+namespace ObjectPool
+{
+	public interface IResourcesLoader<out T> where T: PoolItemBase
+	{
+		IEnumerable<T> LoadResources();
+	}
+}
