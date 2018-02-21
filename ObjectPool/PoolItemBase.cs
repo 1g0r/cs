@@ -1,3 +1,5 @@
+using System;
+
 namespace ObjectPool
 {
 	public abstract class PoolItemBase : IDisposable
