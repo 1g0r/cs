@@ -26,7 +26,7 @@ namespace ObjectPool.Impl
 			if (_loadedObjects.TryDequeue(out result))
 			{
 				var copy = _proxyListExpirationTime;
-				//result.ShouldReturnToPool = () => copy < DateTime.Now;
+				result.ShouldReturnToPool = () => copy > DateTime.Now;
 				return result;
 			}
 			throw new InvalidOperationException("Unable to find object in pool.");
@@ -39,8 +39,7 @@ namespace ObjectPool.Impl
 				if (ShouldLoadObjects())
 				{
 					_loadedObjects = new ConcurrentQueue<T>(_loader.LoadResources());
-					//_proxyListExpirationTime = DateTime.Now.Add(TimeSpan.FromHours(1)); 
-					_proxyListExpirationTime = DateTime.MaxValue; 
+					_proxyListExpirationTime = DateTime.Now.Add(_loader.ExpirationTimeout); 
 				}
 				
 				_loadingObjects = 0;
