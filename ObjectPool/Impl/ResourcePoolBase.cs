@@ -3,7 +3,7 @@ using System.Collections.Concurrent;
 
 namespace ObjectPool.Impl
 {
-	internal abstract class ResourcePoolBase<T> : IResourcePool<T> where T : PoolItemBase
+	internal abstract class ResourcePoolBase<T> : IResourcePool<T>, IDisposable where T : PoolItemBase
 	{
 		private readonly ConcurrentQueue<T> _resourcePool = new ConcurrentQueue<T>();
 		private readonly ResourcePoolCounters _counters = new ResourcePoolCounters();
@@ -26,8 +26,8 @@ namespace ObjectPool.Impl
 						_counters.IncHitCount();
 						return result;
 					}
-					_counters.IncNotAvailableCount();	
-					_resourcePool.Enqueue(result);
+					_counters.IncNotAvailableCount();
+					ReturnItemToPool(result, false); // Return item to pool	
 				}
 				else
 				{
@@ -37,6 +37,20 @@ namespace ObjectPool.Impl
 			} while (!exit && tryCount > 0);
 
 			return CreateItem();
+		}
+
+		protected abstract T CreatePoolItem();
+
+		protected void AddItem(T item)
+		{
+			_counters.IncCreateCount();
+			item.ReturnToPool = ReturnItemToPool;
+			_resourcePool.Enqueue(item);
+		}
+
+		protected virtual void ReleaseResources()
+		{
+			
 		}
 
 		private T CreateItem()
@@ -49,7 +63,6 @@ namespace ObjectPool.Impl
 			}
 			return result;
 		}
-		protected abstract T CreatePoolItem();
 
 		private void ReturnItemToPool(PoolItemBase poolItem, bool reRegisterForFinalization)
 		{
@@ -76,9 +89,23 @@ namespace ObjectPool.Impl
 			}
 		}
 
-
 		~ResourcePoolBase()
 		{
+			Dispose(false);
+		}
+
+		public void Dispose()
+		{
+			Dispose(true);
+		}
+
+		private void Dispose(bool disposing)
+		{
+			if (disposing)
+			{
+				ReleaseResources();
+				GC.SuppressFinalize(this);
+			}
 			foreach (var item in _resourcePool)
 			{
 				DestroyPoolItem(item);
