@@ -6,7 +6,7 @@ namespace ObjectPool.Impl
 	{
 		IResourcePool<T> IResourcePoolFactory.CreatePoolWithLoader<T>(IResourcesLoader<T> loader)
 		{
-			return new ResourcePoolWithLoader<T>(loader);
+			return new ResourcePoolWithLoader<T>(loader, new ResourcePoolWithLoaderSettings());
 		}
 
 		IResourcePool<T> IResourcePoolFactory.CreatePool<T>(int minimumSize, int maximumSize, Func<T> factoryMethod)
