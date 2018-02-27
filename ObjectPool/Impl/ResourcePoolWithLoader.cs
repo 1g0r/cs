@@ -7,49 +7,64 @@ namespace ObjectPool.Impl
 	internal class ResourcePoolWithLoader<T> : ResourcePoolBase<T> where T : PoolItemBase
 	{
 		private readonly IResourcesLoader<T> _loader;
-		private ConcurrentQueue<T> _loadedObjects;
-		private int _loadingObjects = 0;
+		private readonly IResourcePoolWithLoaderSettings _settings;
+		private int _initialized = 0, _loading = 0;
 		private DateTime _proxyListExpirationTime;
-		public ResourcePoolWithLoader(IResourcesLoader<T> loader)
+
+		public ResourcePoolWithLoader(IResourcesLoader<T> loader, IResourcePoolWithLoaderSettings settings)
 		{
 			_loader = loader;
+			_settings = settings;
 		}
 		public override T GetResource()
 		{
-			LoadObjects();
+			Load();
 			return Get();
 		}
 
 		protected override T CreatePoolItem()
 		{
-			T result;
-			if (_loadedObjects.TryDequeue(out result))
-			{
-				var copy = _proxyListExpirationTime;
-				result.ShouldReturnToPool = () => copy > DateTime.Now;
-				return result;
-			}
 			throw new InvalidOperationException("Unable to find object in pool.");
 		}
 
-		private void LoadObjects()
+		private void Load()
 		{
-			if (Interlocked.CompareExchange(ref _loadingObjects, 1, 0) == 0)
+			if (Interlocked.CompareExchange(ref _loading, 1, 0) == 0)
 			{
-				if (ShouldLoadObjects())
+				if (IsPoolExpired())
 				{
-					_loadedObjects = new ConcurrentQueue<T>(_loader.LoadResources());
-					_proxyListExpirationTime = DateTime.Now.Add(_loader.ExpirationTimeout); 
+					_proxyListExpirationTime = DateTime.Now.Add(_settings.ResourcePoolTtl);
+					if (Interlocked.CompareExchange(ref _initialized, 1, 0) == 0)
+					{
+						LoadResources();
+					}
+					else
+					{
+						ThreadPool.QueueUserWorkItem(x => LoadResources());
+					}
 				}
-				
-				_loadingObjects = 0;
+				_loading = 0; //Release lock
 			}
 		}
 
-		private bool ShouldLoadObjects()
+		private void LoadResources()
+		{
+			var items = _loader.LoadResources();
+			if (items != null)
+			{
+				foreach (var item in items)
+				{
+					var copy = _proxyListExpirationTime - _settings.ResourceRemoveDelay;
+					item.ShouldReturnToPool = () => copy > DateTime.Now;
+					AddItem(item);
+				}
+			}
+		}
+
+		private bool IsPoolExpired()
 		{
 			return _proxyListExpirationTime == DateTime.MinValue ||
-			       _proxyListExpirationTime < DateTime.Now;
+				   _proxyListExpirationTime < DateTime.Now;
 		}
 	}
 }
