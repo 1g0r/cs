@@ -24,7 +24,7 @@ namespace ObjectPool.Impl
 
 		protected override T CreatePoolItem()
 		{
-			throw new InvalidOperationException("Unable to find object in pool.");
+			throw new AvailableResourceNotFoundException();
 		}
 
 		private void Load()
@@ -64,7 +64,7 @@ namespace ObjectPool.Impl
 		private bool IsPoolExpired()
 		{
 			return _proxyListExpirationTime == DateTime.MinValue ||
-				   _proxyListExpirationTime < DateTime.Now;
+			       _proxyListExpirationTime < DateTime.Now;
 		}
 	}
 }
