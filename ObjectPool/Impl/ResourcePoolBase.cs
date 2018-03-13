@@ -50,7 +50,7 @@ namespace ObjectPool.Impl
 
 		protected virtual void ReleaseResources()
 		{
-			
+
 		}
 
 		private T CreateItem()
