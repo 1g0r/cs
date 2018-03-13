@@ -21,7 +21,7 @@ namespace ObjectPool
 				return _shouldReturnToPool;
 			}
 		}
-		
+
 		internal bool ResetState()
 		{
 			try
