@@ -4,15 +4,15 @@ namespace LoL
 {
     public static class Nested
     {
-        private static Func<Func<T1, T>, T> Start<T1, T>(this Func<Func<T1, T>, T> prev){
+        public static Func<Func<T1, T>, T> Start<T1, T>(this Func<Func<T1, T>, T> prev){
             return (Func<T1, T> callback) => prev(callback);
         }
         
-        private static Func<Func<T2, T>, T> Next<T1, T2, T>(this Func<Func<T1, T>, T> prev, Func<T1, Func<T2, T>, T> next){
+        public static Func<Func<T2, T>, T> Next<T1, T2, T>(this Func<Func<T1, T>, T> prev, Func<T1, Func<T2, T>, T> next){
             return (Func<T2, T> callback) => prev((T1 x) => next(x, callback));
         }
         
-        private static Func<T> Last<T1, T>(this Func<Func<T1, T>, T> prev, Func<T1, T> callback){
+        public static Func<T> Last<T1, T>(this Func<Func<T1, T>, T> prev, Func<T1, T> callback){
             return () => prev(callback);
         }
         
