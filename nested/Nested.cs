@@ -1,6 +1,6 @@
 using System;
 
-namespace Nested
+namespace LoL
 {
     public static class Nested
     {
