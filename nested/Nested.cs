@@ -46,7 +46,7 @@ namespace LoL
             var gs = gi.Last(GetString);
             Console.WriteLine(gs());
             
-            var tt = Start<bool, String>((f) => PassBool(true, f))
+            var tt = Start<bool, string>((f) => PassBool(true, f))
                 .Next<bool, int, string>(GetInt)
                 .Last(GetString);
             Console.WriteLine(tt());
