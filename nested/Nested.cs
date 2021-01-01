@@ -1,6 +1,6 @@
 using System;
 
-namespace Rextester
+namespace Nested
 {
     public static class Program
     {
