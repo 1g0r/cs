@@ -15,7 +15,10 @@ namespace LoL
         public static Func<T> Last<T1, T>(this Func<Func<T1, T>, T> prev, Func<T1, T> callback){
             return () => prev(callback);
         }
-        
+    }
+    
+    public static class Program
+    {
         private static string GetBool(Func<bool, string> callback)
         {
             var flag = false;
