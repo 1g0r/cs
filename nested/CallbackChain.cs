@@ -2,50 +2,51 @@ using System;
 
 namespace LoL
 {
-	public class Nxt<TResult>
+	public static class CallbackChain<TResult>
 	{
-		private readonly Func<Func<TResult>, TResult> _prev;
-		public Nxt(Func<Func<TResult>, TResult> prev)
+		public static NextCall<T> Run<T>(Func<Func<T, TResult>, TResult> prev)
 		{
-			_prev = prev;
+			return new NextCall<T>(callback => prev(callback));
 		}
 		
-		public Nxt<T, TResult> Then<T>(Func<Func<T, TResult>, TResult> next)
+		public static NextCall Run<T1, T2>(T1 a, T2 b, Func<T1, T2, Func<TResult>, TResult> prev)
 		{
-			return new Nxt<T, TResult>(callback => _prev(() => next(callback)));
-		}
-		public Func<TResult> Then(Func<TResult> next)
-		{
-			return () => _prev(next);
-		}
-	}
-	public class Nxt<T, TResult> : Nxt<TResult>
-	{
-		private readonly Func<Func<T, TResult>, TResult> _prev;
-		public Nxt(Func<Func<T, TResult>, TResult> prev) : base(null)
-		{
-			_prev = prev;
-		}
-		public Nxt<TT, TResult> Then<TT>(Func<T, Func<TT, TResult>, TResult> next)
-		{
-			return new Nxt<TT, TResult>(callback => _prev(x => next(x, callback)));
-		}
-		public Func<TResult> Then(Func<T, TResult> next)
-		{
-			return () => _prev(next);
-		}
-	}
-	
-	public static class Chain<TResult>
-	{
-		public static Nxt<T, TResult> Run<T>(Func<Func<T, TResult>, TResult> prev)
-		{
-			return new Nxt<T, TResult>(callback => prev(callback));
+			return new NextCall(callback => prev(a, b, callback));
 		}
 		
-		public static Nxt<TResult> Run<T1, T2>(T1 a, T2 b, Func<T1, T2, Func<TResult>, TResult> prev)
+		public class NextCall
 		{
-			return new Nxt<TResult>(callback => prev(a, b, callback));
+			private readonly Func<Func<TResult>, TResult> _prev;
+			public NextCall(Func<Func<TResult>, TResult> prev)
+			{
+				_prev = prev;
+			}
+
+			public NextCall<T> Then<T>(Func<Func<T, TResult>, TResult> next)
+			{
+				return new NextCall<T>(callback => _prev(() => next(callback)));
+			}
+			public Func<TResult> Then(Func<TResult> next)
+			{
+				return () => _prev(next);
+			}
+		}
+		
+		public class NextCall<T> : NextCall
+		{
+			private readonly Func<Func<T, TResult>, TResult> _prev;
+			public NextCall(Func<Func<T, TResult>, TResult> prev) : base(null)
+			{
+				_prev = prev;
+			}
+			public NextCall<TT> Then<TT>(Func<T, Func<TT, TResult>, TResult> next)
+			{
+				return new NextCall<TT>(callback => _prev(x => next(x, callback)));
+			}
+			public Func<TResult> Then(Func<T, TResult> next)
+			{
+				return () => _prev(next);
+			}
 		}
 	}
 	
@@ -149,14 +150,16 @@ namespace LoL
         
         public static void Main(string[] args)
         {
-			var t = Chain<string>
+			var t = CallbackChain<string>
 				.Run("Begin secure", "fooo", SecureEval)
 				.Then<SqlConn>(OpenConnection)
 				.Then<SqlReader>(OpenReader)
 				.Then(Read);
 			Console.WriteLine(t());
 			
-			var tt = Chain<int>
+			Console.WriteLine("");
+			
+			var tt = CallbackChain<int>
 				.Run("Begin secure", "fooo", SecureEval)
 				.Then<SqlConn>(OpenConnection)
 				.Then<SqlReader>(OpenReader)
