@@ -2,7 +2,7 @@ using System;
 
 namespace LoL
 {
-     public static class Nested
+    public static class Nested
     {
         public delegate TResult Wrap<T, TResult>(Func<T, TResult> callback);
         public delegate TResult Wrap<T1, T2, TResult>(T1 x, Func<T2, TResult> callback);
