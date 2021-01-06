@@ -38,9 +38,6 @@ namespace LoL
 	
 	public static class Chain<TResult>
 	{
-		public delegate TResult Wrap<T>(Func<T, TResult> callback);
-        public delegate TResult Wrap<T1, T2>(T1 x, Func<T2, TResult> callback);
-		
 		public static Nxt<T, TResult> Run<T>(Func<Func<T, TResult>, TResult> prev)
 		{
 			return new Nxt<T, TResult>(callback => prev(callback));
