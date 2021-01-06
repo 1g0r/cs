@@ -80,73 +80,72 @@ namespace LoL
 	
     public static class Program
     {
-	private static string SecureEval(string prevMsg, string errorMsg, Func<string> executor)
-	{
-		try{
-			Console.WriteLine(prevMsg);
-			return executor();
-		}
-		catch(Exception ex){
-			Console.WriteLine(errorMsg);
-			throw;
-		}
-	}
-	private static string OpenConnection(Func<SqlConn, string> cmdExecutor)
-	{
-		using(var conn = new SqlConn())
+		private static string SecureEval(string prevMsg, string errorMsg, Func<string> executor)
 		{
-			conn.Open();
-			return cmdExecutor(conn);
+			try{
+				Console.WriteLine(prevMsg);
+				return executor();
+			}
+			catch(Exception ex){
+				Console.WriteLine(errorMsg);
+				throw;
+			}
 		}
-	}
-		
-	private static string OpenReader(SqlConn conn, Func<SqlReader, string> resultReader)
-	{
-		using(var reader = conn.GetReader())
+		private static string OpenConnection(Func<SqlConn, string> cmdExecutor)
 		{
-			return resultReader(reader);
+			using(var conn = new SqlConn())
+			{
+				conn.Open();
+				return cmdExecutor(conn);
+			}
 		}
-	}
 		
-	private static string Read(SqlReader reader)
-	{
-		return reader.Read();
-	}
-		
-	/* int */
-	private static int SecureEval(string prevMsg, string errorMsg, Func<int> executor)
-	{
-		try{
-			Console.WriteLine(prevMsg);
-			return executor();
-		}
-		catch(Exception ex){
-			Console.WriteLine(errorMsg);
-			throw;
-		}
-	}
-	private static int OpenConnection(Func<SqlConn, int> cmdExecutor)
-	{
-		using(var conn = new SqlConn())
+		private static string OpenReader(SqlConn conn, Func<SqlReader, string> resultReader)
 		{
-			conn.Open();
-			return cmdExecutor(conn);
+			using(var reader = conn.GetReader())
+			{
+				return resultReader(reader);
+			}
 		}
-	}
 		
-	private static int OpenReader(SqlConn conn, Func<SqlReader, int> resultReader)
-	{
-		using(var reader = conn.GetReader())
+		private static string Read(SqlReader reader)
 		{
-			return resultReader(reader);
+			return reader.Read();
 		}
-	}
 
-	private static int ReadInt(SqlReader reader)
-	{
-		return 666;
-	}
-        
+		/* int */
+		private static int SecureEval(string prevMsg, string errorMsg, Func<int> executor)
+		{
+			try{
+				Console.WriteLine(prevMsg);
+				return executor();
+			}
+			catch(Exception ex){
+				Console.WriteLine(errorMsg);
+				throw;
+			}
+		}
+		private static int OpenConnection(Func<SqlConn, int> cmdExecutor)
+		{
+			using(var conn = new SqlConn())
+			{
+				conn.Open();
+				return cmdExecutor(conn);
+			}
+		}
+		
+		private static int OpenReader(SqlConn conn, Func<SqlReader, int> resultReader)
+		{
+			using(var reader = conn.GetReader())
+			{
+				return resultReader(reader);
+			}
+		}
+
+		private static int ReadInt(SqlReader reader)
+		{
+			return 666;
+		}
         
         public static void Main(string[] args)
         {
