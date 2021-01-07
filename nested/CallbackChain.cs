@@ -80,12 +80,14 @@ namespace LoL
 	
     public static class Program
     {
-		private static string SecureEval(string prevMsg, string errorMsg, Func<string> executor)
+		private static TResult SecureEval<TResult>(string prevMsg, string errorMsg, Func<TResult> executor)
 		{
 			try
 			{
 				Console.WriteLine(prevMsg);
-				return executor();
+				var result = executor();
+				Console.WriteLine("Exit SecureEval");
+				return result;
 			}
 			catch(Exception ex)
 			{
@@ -93,7 +95,8 @@ namespace LoL
 				throw;
 			}
 		}
-		private static string OpenConnection(Func<SqlConn, string> cmdExecutor)
+		
+		private static TResult OpenConnection<TResult>(Func<SqlConn, TResult> cmdExecutor)
 		{
 			using(var conn = new SqlConn())
 			{
@@ -102,7 +105,7 @@ namespace LoL
 			}
 		}
 		
-		private static string OpenReader(SqlConn conn, Func<SqlReader, string> resultReader)
+		private static TResult OpenReader<TResult>(SqlConn conn, Func<SqlReader, TResult> resultReader)
 		{
 			using(var reader = conn.GetReader())
 			{
@@ -116,40 +119,10 @@ namespace LoL
 		}
 		
 		/* int */
-		private static int SecureEval(string prevMsg, string errorMsg, Func<int> executor)
-		{
-			try
-			{
-				Console.WriteLine(prevMsg);
-				return executor();
-			}
-			catch(Exception ex){
-				Console.WriteLine(errorMsg + ex.ToString());
-				throw;
-			}
-		}
-		private static int OpenConnection(Func<SqlConn, int> cmdExecutor)
-		{
-			using(var conn = new SqlConn())
-			{
-				conn.Open();
-				return cmdExecutor(conn);
-			}
-		}
-		
-		private static int OpenReader(SqlConn conn, Func<SqlReader, int> resultReader)
-		{
-			using(var reader = conn.GetReader())
-			{
-				return resultReader(reader);
-			}
-		}
-		
 		private static int ReadInt(SqlReader reader)
 		{
 			return 666;
 		}
-        
         
         public static void Main(string[] args)
         {
@@ -158,7 +131,7 @@ namespace LoL
 				.Then<SqlConn>(OpenConnection)
 				.Then<SqlReader>(OpenReader)
 				.Then(Read);
-			Console.WriteLine(t);
+			Console.WriteLine("Result = {0}, Type = {1}", t, t.GetType());
 			
 			Console.WriteLine("");
 			
@@ -167,7 +140,7 @@ namespace LoL
 				.Then<SqlConn>(OpenConnection)
 				.Then<SqlReader>(OpenReader)
 				.Then(ReadInt);
-			Console.WriteLine(tt);
+			Console.WriteLine("Result = {0}, Type = {1}", tt, tt.GetType());
         }
     }
 }
