@@ -17,6 +17,7 @@ namespace LoL
 		public class NextCall
 		{
 			private readonly Func<Func<TResult>, TResult> _prev;
+			
 			public NextCall(Func<Func<TResult>, TResult> prev)
 			{
 				_prev = prev;
@@ -26,26 +27,25 @@ namespace LoL
 			{
 				return new NextCall<T>(callback => _prev(() => next(callback)));
 			}
-			public Func<TResult> Then(Func<TResult> next)
-			{
-				return () => _prev(next);
-			}
 		}
 		
 		public class NextCall<T> : NextCall
 		{
 			private readonly Func<Func<T, TResult>, TResult> _prev;
+			
 			public NextCall(Func<Func<T, TResult>, TResult> prev) : base(null)
 			{
 				_prev = prev;
 			}
+			
 			public NextCall<TT> Then<TT>(Func<T, Func<TT, TResult>, TResult> next)
 			{
 				return new NextCall<TT>(callback => _prev(x => next(x, callback)));
 			}
-			public Func<TResult> Then(Func<T, TResult> next)
+			
+			public TResult Then(Func<T, TResult> next)
 			{
-				return () => _prev(next);
+				return _prev(next);
 			}
 		}
 	}
@@ -82,12 +82,14 @@ namespace LoL
     {
 		private static string SecureEval(string prevMsg, string errorMsg, Func<string> executor)
 		{
-			try{
+			try
+			{
 				Console.WriteLine(prevMsg);
 				return executor();
 			}
-			catch(Exception ex){
-				Console.WriteLine(errorMsg);
+			catch(Exception ex)
+			{
+				Console.WriteLine(errorMsg + ex.ToString());
 				throw;
 			}
 		}
@@ -112,16 +114,17 @@ namespace LoL
 		{
 			return reader.Read();
 		}
-
+		
 		/* int */
 		private static int SecureEval(string prevMsg, string errorMsg, Func<int> executor)
 		{
-			try{
+			try
+			{
 				Console.WriteLine(prevMsg);
 				return executor();
 			}
 			catch(Exception ex){
-				Console.WriteLine(errorMsg);
+				Console.WriteLine(errorMsg + ex.ToString());
 				throw;
 			}
 		}
@@ -141,11 +144,12 @@ namespace LoL
 				return resultReader(reader);
 			}
 		}
-
+		
 		private static int ReadInt(SqlReader reader)
 		{
 			return 666;
 		}
+        
         
         public static void Main(string[] args)
         {
@@ -154,7 +158,7 @@ namespace LoL
 				.Then<SqlConn>(OpenConnection)
 				.Then<SqlReader>(OpenReader)
 				.Then(Read);
-			Console.WriteLine(t());
+			Console.WriteLine(t);
 			
 			Console.WriteLine("");
 			
@@ -163,7 +167,7 @@ namespace LoL
 				.Then<SqlConn>(OpenConnection)
 				.Then<SqlReader>(OpenReader)
 				.Then(ReadInt);
-			Console.WriteLine(tt());
+			Console.WriteLine(tt);
         }
     }
 }
