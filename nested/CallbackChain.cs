@@ -14,7 +14,7 @@ namespace LoL
 			return new NextCall(callback => prev(a, b, callback));
 		}
 		
-		public class NextCall 
+		public class NextCall
 		{
 			private readonly Func<Func<TResult>, TResult> _prev;
 			
