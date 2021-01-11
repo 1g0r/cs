@@ -45,7 +45,7 @@ namespace LoL
                         
                         public NextCall<TT> Then<TT>(Func<T, TT> with)
                         {
-                                return new NextCall<TT>(callback => _prev(x => callback(with(x)) );
+                                return new NextCall<TT>(callback => _prev(x => callback(with(x)) ));
                         }	
 
 			public TResult Then(Func<T, TResult> next)
