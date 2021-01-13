@@ -69,7 +69,55 @@ namespace LoL
                 }
             }
         }
-    }
 
- 
+        private static IEnumerable<string> CreateReader(Func<DataReader> factory, Func<DataReader, IEnumerable<string>> callback)
+        {
+            using (var reader = factory())
+            {
+                foreach (var item in callback(reader))
+                {
+                    yield return item;
+                }
+            }
+        }
+
+        private static IEnumerable<string> ReadItems(DataReader reader)
+        {
+            string item;
+            while (reader.Read(out item))
+            {
+                yield return item;
+            }
+        }
+
+        private static IEnumerable<string> ReadItems(DataReader reader, Func<IEnumerable<string>, IEnumerable<string>> callback)
+        {
+            return callback(ReadItems(reader));
+        }
+
+        private static IEnumerable<string> Map(IEnumerable<string> values)
+        {
+            foreach (var value in values)
+            {
+                yield return $"\t-{value}";
+            }
+        }
+
+        static void Main()
+        {
+            var text = CallbackChain<IEnumerable<string>>
+                .Enter(ExecuteSafe, "Start main", "Error: ");
+                .Then<DataAccessor>(CreateAccessor)
+                .With(a => a.GetReader())
+                .Then(CreateReader)
+                .Then<IEnumerable<string>>(ReadItems)
+                .Return(Map)
+
+            foreach (var line in text)
+            {
+                Console.WriteLine(line);
+            } 
+            Console.ReadKey()               
+        }
+    }
 }
