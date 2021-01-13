@@ -42,4 +42,34 @@ namespace LoL
             return false;
         }
     }
+
+    class Program
+    {
+        private static IEnumerable<string> ExecuteSafe(string signature, string error, Func<IEnumerable> callback)
+        {
+            try
+            {
+                Console.WriteLine(signature);
+                return callback();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(error + ex.ToString());
+                return Enumerable.Empty<string>();
+            }
+        }
+
+        private static IEnumerable<string> CreateAccessor(Func<DataAccessor, IEnumerable<string>> callback)
+        {
+            using (var accessor = new DataAccessor())
+            {
+                foreach (var item in callback(accessor))
+                {
+                    yield return item;
+                }
+            }
+        }
+    }
+
+ 
 }
